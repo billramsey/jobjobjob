@@ -2,11 +2,10 @@
 
 Will lookup information about the job listing like salary range, title, etc. if you give the job listing url
 
-Store the job application.  Allow you to track through process.
-
-
+Store the job application. Allow you to track through process.
 
 # Current Feature set:
+
 not much.
 will query ashbyhq job listings and get title, salary range.
 
@@ -36,3 +35,5 @@ make ui pretty.
 #### command list:
 
 bunx supabase migration new create_jobs_table
+bunx supabase gen types typescript --project-id "tcmzkhhsupzeccsgcmao" > types/database.types.ts
+bunx prettier --write .
