@@ -1,14 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import Modal from '@/components/modal';
+import JobRow from '@/components/job-row';
+import { Database } from '@/types/database.types';
 
-interface Job {
-  id: number;
-  company: string;
-  listing_url: string;
-}
+type Job = Database['public']['Tables']['jobs']['Row'];
 
 export default function ShowJobs() {
   const [jobs, setJobs] = useState([]);
@@ -162,25 +159,7 @@ export default function ShowJobs() {
         </div>
         {jobs &&
           jobs.map((job: Job) => {
-            return (
-              <div key={job.id} className="grid grid-cols-4 gap-4">
-                <div>{job.company}</div>
-
-                <div>
-                  <Link href={job.listing_url} rel="noopener noreferrer" target="_blank">
-                    Listing Link
-                  </Link>
-                </div>
-                <div>
-                  <button
-                    className="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    onClick={() => lookupUrl(job.listing_url)}
-                  >
-                    Lookup
-                  </button>
-                </div>
-              </div>
-            );
+            return <JobRow key={job.id} job={job} lookupAction={lookupUrl} />;
           })}
       </div>
     </>
