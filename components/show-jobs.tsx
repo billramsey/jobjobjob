@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Modal from '@/components/modal';
+import { useEffect, useState } from 'react';
+import JobModal from '@/components/job-modal';
 import JobRow from '@/components/job-row';
 import { Database } from '@/types/database.types';
 
@@ -9,65 +9,24 @@ type Job = Database['public']['Tables']['jobs']['Row'];
 
 export default function ShowJobs() {
   const [jobs, setJobs] = useState([]);
-
-  const [listingUrl, setListingUrl] = useState('');
-  const [title, setTitle] = useState('');
-  const [salaryMin, setSalaryMin] = useState<string | null>(null);
-  const [salaryMax, setSalaryMax] = useState<string | null>(null);
-  const [officePolicy, setOfficePolicy] = useState<string | null>(null);
-  const [companyName, setCompanyName] = useState<string | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [lookupError, setLookupError] = useState<string | null>(null);
+
+  const getJobs = async () => {
+    const res = await fetch('/api/jobs/get');
+    const n = await res.json();
+    setJobs(n);
+  };
 
   useEffect(() => {
-    const getJobs = async () => {
-      const res = await fetch('/api/jobs/get');
-      const n = await res.json();
-      setJobs(n);
-    };
     getJobs().catch((e) => console.log(e));
     return () => {};
   }, []);
 
-  const lookupUrl = async (url: string) => {
-    const res = await fetch(`/api/listingInfo/post`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ url: url }),
-    });
-
-    const json = await res.json();
-    if (json.error) {
-      setLookupError(json.error.code);
-    } else {
-      setTitle(json.title);
-      setSalaryMin(json.minSalary);
-      setSalaryMax(json.maxSalary);
-      setCompanyName(json.companyName);
-      setOfficePolicy(json.officePolicy);
-      setListingUrl(url);
-    }
+  const openModalWithJobListing = () => {
+    setModalOpen(true);
   };
-  const submit = async () => {
-    await fetch(`/api/application/post`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        companyName,
-        salaryMin,
-        salaryMax,
-        title,
-        officePolicy,
-        listingUrl,
-      }),
-    }).catch((e) => console.log(e));
+  const causeRefresh = () => {
+    getJobs().catch((e) => console.log(e));
   };
 
   return (
@@ -80,86 +39,19 @@ export default function ShowJobs() {
           >
             Add New Job
           </button>
-          <Modal
+          <JobModal
             isOpen={isModalOpen}
-            onSubmit={submit}
             submitText="Create New"
             closeModal={() => setModalOpen(false)}
-          >
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="sm:flex sm:items-start">
-                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                  <h3 className="text-base font-semibold text-gray-900" id="dialog-title">
-                    Enter Job Listing
-                  </h3>
-                  <div className="mt-2">
-                    <div>
-                      <div>
-                        Listing URL: <input ref={inputRef} />
-                      </div>
-                      <div>
-                        <button
-                          className="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                          onClick={() =>
-                            inputRef.current?.value && lookupUrl(inputRef.current?.value)
-                          }
-                        >
-                          Lookup
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      {lookupError && <div>{lookupError}</div>}
-                      {listingUrl && (
-                        <div>
-                          <div>
-                            Company Name:{' '}
-                            <input
-                              value={companyName || ''}
-                              onChange={(e) => setCompanyName(e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            Title:{' '}
-                            <input
-                              value={title}
-                              onChange={(e) => setTitle(e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            Office Policy:{' '}
-                            <input
-                              value={officePolicy || ''}
-                              onChange={(e) => setOfficePolicy(e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            Salary Min:{' '}
-                            <input
-                              value={salaryMin || ''}
-                              onChange={(e) => setSalaryMin(e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            Salary Max:{' '}
-                            <input
-                              value={salaryMax || ''}
-                              onChange={(e) => setSalaryMax(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Modal>
+            causeRefresh={() => causeRefresh()}
+          />
         </div>
         <div className="py-2">Jobs List</div>
         {jobs &&
           jobs.map((job: Job) => {
-            return <JobRow key={job.id} job={job} lookupAction={lookupUrl} />;
+            return (
+              <JobRow key={job.id} job={job} lookupAction={openModalWithJobListing} />
+            );
           })}
       </div>
     </>
