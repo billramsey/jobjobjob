@@ -9,6 +9,7 @@ type Job = Database['public']['Tables']['jobs']['Row'];
 
 export default function ShowJobs() {
   const [jobs, setJobs] = useState([]);
+  const [jobToEdit, setJobToEdit] = useState('');
   const [isModalOpen, setModalOpen] = useState(false);
 
   const getJobs = async () => {
@@ -22,7 +23,8 @@ export default function ShowJobs() {
     return () => {};
   }, []);
 
-  const openModalWithJobListing = () => {
+  const openModalWithJobListing = (jobId: string) => {
+    setJobToEdit(jobId);
     setModalOpen(true);
   };
   const causeRefresh = () => {
@@ -44,13 +46,18 @@ export default function ShowJobs() {
             submitText="Create New"
             closeModal={() => setModalOpen(false)}
             causeRefresh={() => causeRefresh()}
+            jobId={jobToEdit}
           />
         </div>
         <div className="py-2">Jobs List</div>
         {jobs &&
           jobs.map((job: Job) => {
             return (
-              <JobRow key={job.id} job={job} lookupAction={openModalWithJobListing} />
+              <JobRow
+                key={job.id}
+                job={job}
+                lookupAction={() => openModalWithJobListing(job.id.toString())}
+              />
             );
           })}
       </div>
