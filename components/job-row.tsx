@@ -20,7 +20,7 @@ export default function JobRow({ job, lookupAction }: JobRowTypes) {
           {job.company}
         </div>
 
-        <div className="col-span-1 md:col-span-2">
+        <div className="md:col-span-2">
           <span className="block text-xs text-gray-500 md:hidden">Position</span>
           <span className="font-medium text-gray-800">{job.job_title}</span>
         </div>
@@ -47,7 +47,7 @@ export default function JobRow({ job, lookupAction }: JobRowTypes) {
           )}
         </div>
 
-        <div className="flex items-center">
+        <div>
           <span className="block text-xs text-gray-500 md:hidden">Listing</span>
           {job.listing_url ? (
             <Link
@@ -64,12 +64,14 @@ export default function JobRow({ job, lookupAction }: JobRowTypes) {
         </div>
 
         <div className="flex justify-end px-2">
-          <button
-            className="px-2 py-1 text-xs font-medium text-center text-white bg-blue-600 rounded hover:bg-blue-700 focus:ring-2 focus:outline-none focus:ring-blue-300 transition-colors duration-200"
-            onClick={() => lookupAction(job.listing_url || '')}
-          >
-            Lookup
-          </button>
+          <div>
+            <button
+              className="px-2 py-1 text-xs font-medium text-center text-white bg-blue-600 rounded hover:bg-blue-700 focus:ring-2 focus:outline-none focus:ring-blue-300 transition-colors duration-200"
+              onClick={() => lookupAction(job.listing_url || '')}
+            >
+              Lookup
+            </button>
+          </div>
         </div>
       </div>
     </div>
