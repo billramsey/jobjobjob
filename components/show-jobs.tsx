@@ -68,9 +68,9 @@ export default function ShowJobs() {
         salaryMax,
         title,
         officePolicy,
-        listingUrl
+        listingUrl,
       }),
-    }).catch((e)=> console.log(e));
+    }).catch((e) => console.log(e));
   };
 
   return (

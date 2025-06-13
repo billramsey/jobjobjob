@@ -1,4 +1,4 @@
-('server only');
+'server only';
 
 import * as cheerio from 'cheerio';
 import { Database } from '@/types/database.types';
@@ -6,7 +6,7 @@ import { Database } from '@/types/database.types';
 type OfficePolicyTypes = Database['public']['Enums']['office_policy_types'];
 
 interface ListingInfo {
-  companyName: string,
+  companyName: string;
   title: string;
   minSalary: number | null;
   maxSalary: number | null;
@@ -56,7 +56,7 @@ class Ashby extends Reader {
       // skipping for now.
       if (parsed.isRemote) {
         this.officePolicy = 'remote';
-      } else if (parsed.workplaceType === "Hybrid") {
+      } else if (parsed.workplaceType === 'Hybrid') {
         this.officePolicy = 'hybrid';
       }
       this.companyName = parsed.hiringOrganization.name;
