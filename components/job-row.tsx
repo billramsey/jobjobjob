@@ -69,7 +69,7 @@ export default function JobRow({ job, lookupAction }: JobRowTypes) {
               className="px-2 py-1 text-xs font-medium text-center text-white bg-blue-600 rounded hover:bg-blue-700 focus:ring-2 focus:outline-none focus:ring-blue-300 transition-colors duration-200"
               onClick={() => lookupAction(job.listing_url || '')}
             >
-              Lookup
+              Edit
             </button>
           </div>
         </div>

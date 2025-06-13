@@ -1,10 +1,35 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type ModalProps = {
   isOpen: boolean;
   closeModal: () => void;
   causeRefresh: () => void;
   submitText: string;
+  jobId: string;
+};
+
+// Not sure if I want to use the supabase definition, as that could change on every update of types.
+// so I'm going to copy them here.  If in the future, this is a pain, we could also just pick and choose
+// out of the DatabaseRow.  I'm also going to go with snake_case, converting feels wrong, and this will
+// point readers to the fact that this info is going in and out of the database.
+// we'll also set office_policy to a string and adjust later
+type ReactJob = {
+  company: string;
+  id: number | null;
+  job_title: string | null;
+  listing_url: string | null;
+  office_policy: string | null;
+  salary_max_dollars: number | null;
+  salary_min_dollars: number | null;
+};
+const emptyJob = {
+  company: '',
+  id: null,
+  job_title: null,
+  listing_url: null,
+  office_policy: null,
+  salary_max_dollars: null,
+  salary_min_dollars: null,
 };
 
 export default function JobModal({
@@ -12,15 +37,34 @@ export default function JobModal({
   closeModal,
   submitText,
   causeRefresh,
+  jobId,
 }: ModalProps) {
-  const [listingUrl, setListingUrl] = useState('');
-  const [title, setTitle] = useState('');
-  const [salaryMin, setSalaryMin] = useState<string | null>(null);
-  const [salaryMax, setSalaryMax] = useState<string | null>(null);
-  const [officePolicy, setOfficePolicy] = useState<string | null>(null);
-  const [companyName, setCompanyName] = useState<string | null>(null);
+  const [job, setJob] = useState<ReactJob>(emptyJob);
   const inputRef = useRef<HTMLInputElement>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
+
+  const closeAndClean = () => {
+    setJob(emptyJob);
+    closeModal();
+  };
+  const updateJobValue = (key: string, value: string | number | null) => {
+    setJob((previousJob: ReactJob) => ({
+      ...previousJob,
+      [key]: value,
+    }));
+  };
+
+  useEffect(() => {
+    const getJob = async () => {
+      const res = await fetch(`/api/jobs/get/${jobId}`);
+      const n = await res.json();
+      setJob(n);
+    };
+    if (jobId) {
+      getJob().catch((e) => console.log(e));
+    }
+    return () => {};
+  }, [jobId]);
 
   const lookupUrl = async (url: string) => {
     const res = await fetch(`/api/listingInfo/post`, {
@@ -36,38 +80,35 @@ export default function JobModal({
     if (json.error) {
       setLookupError(json.error.code);
     } else {
-      setTitle(json.title);
-      setSalaryMin(json.minSalary);
-      setSalaryMax(json.maxSalary);
-      setCompanyName(json.companyName);
-      setOfficePolicy(json.officePolicy);
-      setListingUrl(url);
+      setJob({
+        id: job.id,
+        job_title: json.title,
+        salary_min_dollars: json.minSalary,
+        salary_max_dollars: json.maxSalary,
+        company: json.companyName,
+        listing_url: url,
+        office_policy: json.officePolicy,
+      });
     }
   };
 
   const submit = async () => {
-    await fetch(`/api/application/post`, {
-      method: 'POST',
+    let url = '/api/jobs/post';
+    let method = 'POST';
+    if (job.id) {
+      url = '/api/jobs/put';
+      method = 'PUT';
+    }
+    await fetch(url, {
+      method: method,
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        companyName,
-        salaryMin,
-        salaryMax,
-        title,
-        officePolicy,
-        listingUrl,
-      }),
+      body: JSON.stringify(job),
     })
       .then(() => {
-        setTitle('');
-        setSalaryMin(null);
-        setSalaryMax(null);
-        setCompanyName('');
-        setOfficePolicy('');
-        setListingUrl('');
+        setJob(emptyJob);
         causeRefresh();
         closeModal();
       })
@@ -96,6 +137,7 @@ export default function JobModal({
                 <input
                   id="listing-url"
                   ref={inputRef}
+                  defaultValue={job.listing_url || ''}
                   placeholder="https://example.com/listing"
                   className="flex-grow block w-full px-4 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none focus:border-blue-500"
                 />
@@ -113,16 +155,15 @@ export default function JobModal({
             {lookupError && (
               <div className="text-red-600 text-sm font-medium">{lookupError}</div>
             )}
-
-            {listingUrl && (
+            {job.listing_url && (
               <div className="mt-6 space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Company Name
                   </label>
                   <input
-                    value={companyName || ''}
-                    onChange={(e) => setCompanyName(e.target.value)}
+                    value={job.company || ''}
+                    onChange={(e) => updateJobValue('company', e.target.value)}
                     className="block w-full px-4 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
@@ -131,8 +172,8 @@ export default function JobModal({
                     Title
                   </label>
                   <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    value={job.job_title || ''}
+                    onChange={(e) => updateJobValue('job_title', e.target.value)}
                     className="block w-full px-4 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
@@ -141,8 +182,8 @@ export default function JobModal({
                     Office Policy
                   </label>
                   <input
-                    value={officePolicy || ''}
-                    onChange={(e) => setOfficePolicy(e.target.value)}
+                    value={job.office_policy || ''}
+                    onChange={(e) => updateJobValue('office_policy', e.target.value)}
                     className="block w-full px-4 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
@@ -151,8 +192,8 @@ export default function JobModal({
                     Salary Min
                   </label>
                   <input
-                    value={salaryMin || ''}
-                    onChange={(e) => setSalaryMin(e.target.value)}
+                    value={job.salary_min_dollars || ''}
+                    onChange={(e) => updateJobValue('salary_min_dollars', e.target.value)}
                     className="block w-full px-4 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
@@ -161,15 +202,14 @@ export default function JobModal({
                     Salary Max
                   </label>
                   <input
-                    value={salaryMax || ''}
-                    onChange={(e) => setSalaryMax(e.target.value)}
+                    value={job.salary_max_dollars || ''}
+                    onChange={(e) => updateJobValue('salary_max_dollars', e.target.value)}
                     className="block w-full px-4 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
             )}
           </div>
-
           <div className="bg-gray-50 px-4 py-3 flex justify-end">
             <button
               type="button"
@@ -180,7 +220,7 @@ export default function JobModal({
             </button>
             <button
               type="button"
-              onClick={closeModal}
+              onClick={closeAndClean}
               className="ml-3 inline-flex justify-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
             >
               Cancel
