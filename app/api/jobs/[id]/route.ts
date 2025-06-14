@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 
-export async function GET({ params }: { params: Promise<{ id: number }> }) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: number }> },
+) {
   const { id } = await params;
   const supabase = await createClient();
   const { data: job, error } = await supabase
@@ -45,4 +48,17 @@ export async function PUT(request: Request) {
     console.log('insertError', insertError);
   }
   return Response.json({ success: true });
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: number }> },
+) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: job, error } = await supabase.from('jobs').delete().eq('id', id);
+  if (error) {
+    console.log(`error deleting single job ${error}`);
+  }
+  return Response.json(job);
 }
