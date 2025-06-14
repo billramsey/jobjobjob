@@ -7,19 +7,19 @@ import type { Database } from '@/types/database.types';
 type JobRowTypes = {
   job: Job;
   lookupAction: (arg0: string) => void;
+  deleteAction: (arg0: string) => void;
 };
 
 type Job = Database['public']['Tables']['jobs']['Row'];
 
-export default function JobRow({ job, lookupAction }: JobRowTypes) {
+export default function JobRow({ job, lookupAction, deleteAction }: JobRowTypes) {
   return (
     <div className="w-full my-2">
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-2 py-1 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 border border-gray-100">
-        <div className="font-medium text-gray-800">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-1 py-1 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 border border-gray-100">
+        <div className="font-medium text-gray-800 px-2">
           <span className="block text-xs text-gray-500 md:hidden">Company</span>
           {job.company}
         </div>
-
         <div className="md:col-span-2">
           <span className="block text-xs text-gray-500 md:hidden">Position</span>
           <span className="font-medium text-gray-800">{job.job_title}</span>
@@ -64,6 +64,9 @@ export default function JobRow({ job, lookupAction }: JobRowTypes) {
         </div>
 
         <div className="flex justify-end px-2">
+          <div className="px-2">
+            <button onClick={() => deleteAction(job.id.toString())}> 🗑</button>
+          </div>
           <div>
             <button
               className="px-2 py-1 text-xs font-medium text-center text-white bg-blue-600 rounded hover:bg-blue-700 focus:ring-2 focus:outline-none focus:ring-blue-300 transition-colors duration-200"

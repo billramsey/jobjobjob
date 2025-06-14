@@ -31,6 +31,12 @@ export default function ShowJobs() {
   const causeRefresh = () => {
     getJobs().catch((e) => console.log(`failed to get jobs in show-jobs refresh ${e}`));
   };
+  const deleteJob = async (id: string) => {
+    await fetch(`/api/jobs/${id}`, {
+      method: 'DELETE',
+    });
+    getJobs().catch((e) => console.log(`failed to get jobs in show-jobs delete ${e}`));
+  };
 
   return (
     <>
@@ -56,6 +62,7 @@ export default function ShowJobs() {
               <JobRow
                 key={job.id}
                 job={job}
+                deleteAction={() => deleteJob(job.id.toString())}
                 lookupAction={() => openModalWithJobListing(job.id.toString())}
               />
             );
