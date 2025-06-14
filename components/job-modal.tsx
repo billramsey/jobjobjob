@@ -4,7 +4,6 @@ type ModalProps = {
   isOpen: boolean;
   closeModal: () => void;
   causeRefresh: () => void;
-  submitText: string;
   jobId: string;
 };
 
@@ -35,7 +34,6 @@ const emptyJob = {
 export default function JobModal({
   isOpen,
   closeModal,
-  submitText,
   causeRefresh,
   jobId,
 }: ModalProps) {
@@ -45,6 +43,7 @@ export default function JobModal({
 
   const closeAndClean = () => {
     setJob(emptyJob);
+    setLookupError(null);
     closeModal();
   };
   const updateJobValue = (key: string, value: string | number | null) => {
@@ -61,7 +60,7 @@ export default function JobModal({
       setJob(n);
     };
     if (jobId) {
-      getJob().catch((e) => console.log(e));
+      getJob().catch((e) => console.log(`failed to get jobs in modal ${e}`));
     }
     return () => {};
   }, [jobId]);
@@ -123,7 +122,7 @@ export default function JobModal({
         <div className="flex h-full flex-col">
           <div className="flex-1 overflow-y-auto p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Enter Job Listing
+              {jobId ? 'Edit' : 'Enter'} Job Listing
             </h3>
 
             <div className="mb-4">
@@ -216,7 +215,7 @@ export default function JobModal({
               onClick={submit}
               className="inline-flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500"
             >
-              {submitText}
+              {jobId ? 'Update' : 'Create New'}
             </button>
             <button
               type="button"

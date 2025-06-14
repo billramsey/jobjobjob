@@ -14,8 +14,6 @@ export async function PUT(request: Request) {
     office_policy,
   } = json;
 
-  console.log('ID', json);
-
   const { error: insertError } = await supabase
     .from('jobs')
     .update({

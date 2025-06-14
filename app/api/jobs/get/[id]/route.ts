@@ -12,6 +12,8 @@ export async function GET(
     .eq('id', id)
     .limit(1)
     .single();
-  console.log(error);
+  if (error) {
+    console.log(`error getting single job ${error}`);
+  }
   return Response.json(job);
 }
