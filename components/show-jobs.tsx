@@ -13,13 +13,14 @@ export default function ShowJobs() {
   const [isModalOpen, setModalOpen] = useState(false);
 
   const getJobs = async () => {
-    const res = await fetch('/api/jobs/get');
-    const n = await res.json();
-    setJobs(n);
+    const response = await fetch('/api/jobs');
+    setJobs(await response.json());
   };
 
   useEffect(() => {
-    getJobs().catch((e) => console.log(e));
+    getJobs().catch((e) =>
+      console.log(`failed to get jobs in show-jobs use-effect ${e}`),
+    );
     return () => {};
   }, []);
 
@@ -28,7 +29,7 @@ export default function ShowJobs() {
     setModalOpen(true);
   };
   const causeRefresh = () => {
-    getJobs().catch((e) => console.log(e));
+    getJobs().catch((e) => console.log(`failed to get jobs in show-jobs refresh ${e}`));
   };
 
   return (
@@ -43,7 +44,6 @@ export default function ShowJobs() {
           </button>
           <JobModal
             isOpen={isModalOpen}
-            submitText="Create New"
             closeModal={() => setModalOpen(false)}
             causeRefresh={() => causeRefresh()}
             jobId={jobToEdit}
