@@ -55,7 +55,7 @@ export default function JobModal({
 
   useEffect(() => {
     const getJob = async () => {
-      const res = await fetch(`/api/jobs/get/${jobId}`);
+      const res = await fetch(`/api/jobs/${jobId}`);
       const n = await res.json();
       setJob(n);
     };
@@ -66,7 +66,7 @@ export default function JobModal({
   }, [jobId]);
 
   const lookupUrl = async (url: string) => {
-    const res = await fetch(`/api/listingInfo/post`, {
+    const res = await fetch(`/api/listingInfo`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -92,10 +92,10 @@ export default function JobModal({
   };
 
   const submit = async () => {
-    let url = '/api/jobs/post';
+    let url = '/api/jobs';
     let method = 'POST';
     if (job.id) {
-      url = '/api/jobs/put';
+      url = `/api/jobs/${jobId}`;
       method = 'PUT';
     }
     await fetch(url, {

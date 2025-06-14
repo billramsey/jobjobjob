@@ -13,7 +13,7 @@ export default function ShowJobs() {
   const [isModalOpen, setModalOpen] = useState(false);
 
   const getJobs = async () => {
-    const response = await fetch('/api/jobs/get');
+    const response = await fetch('/api/jobs');
     setJobs(await response.json());
   };
 
